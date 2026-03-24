@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鲲鹏供应链 - 财务报表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a365d 50%, #0a2463 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .logo {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        h1 {
+            font-size: 36px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 60px;
+        }
+        
+        .cards {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 40px 50px;
+            min-width: 280px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+        }
+        
+        .card:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .card-desc {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.6;
+        }
+        
+        .card-tag {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 6px 16px;
+            background: rgba(72, 187, 120, 0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            color: #68d391;
+        }
+        
+        .card-tag.conservative {
+            background: rgba(237, 137, 54, 0.3);
+            color: #f6ad55;
+        }
+        
+        .footer {
+            margin-top: 60px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+        }
+        
+        @media (max-width: 600px) {
+            .cards {
+                flex-direction: column;
+                align-items: center;
+            }
+            h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🐟</div>
+        <h1>鲲鹏供应链</h1>
+        <p class="subtitle">财务报表展示</p>
+        
+        <div class="cards">
+            <a href="report.html" class="card">
+                <div class="card-icon">📊</div>
+                <div class="card-title">标准版报表</div>
+                <div class="card-desc">基于销售冲刺计划的<br>完整财务预测分析</div>
+                <span class="card-tag">推荐</span>
+            </a>
+            
+            <a href="report-conservative.html" class="card">
+                <div class="card-icon">📉</div>
+                <div class="card-title">保守估计报表</div>
+                <div class="card-desc">基于保守假设的<br>风险可控方案</div>
+                <span class="card-tag conservative">稳健</span>
+            </a>
+        </div>
+        
+        <div class="footer">
+            鲲鹏供应链 · 2026
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鲲鹏供应链 - 财务报表</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header .subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .header .period {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card.primary {
+            border-top: 4px solid #1a73e8;
+        }
+        
+        .card.success {
+            border-top: 4px solid #34a853;
+        }
+        
+        .card.warning {
+            border-top: 4px solid #fbbc05;
+        }
+        
+        .card.danger {
+            border-top: 4px solid #ea4335;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            color: #5f6368;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .card-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .card-unit {
+            font-size: 14px;
+            color: #5f6368;
+        }
+        
+        .card-detail {
+            font-size: 14px;
+            color: #5f6368;
+            margin-top: 10px;
+        }
+        
+        .section {
+            padding: 30px 40px;
+            border-bottom: 1px solid #e8eaed;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: #1a73e8;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8eaed;
+            font-weight: 600;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #5f6368;
+            border-bottom: 2px solid #e8eaed;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e8eaed;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .number {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+        }
+        
+        .positive {
+            color: #34a853;
+            font-weight: 600;
+        }
+        
+        .negative {
+            color: #ea4335;
+            font-weight: 600;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #e8eaed;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1a73e8, #34a853);
+            border-radius: 5px;
+            transition: width 1s ease;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            color: #5f6368;
+            font-size: 14px;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #e3f2fd 0%, #f3e5f5 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #1a73e8;
+        }
+        
+        @media (max-width: 768px) {
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1>鲲鹏供应链财务报表</h1>
+            <div class="subtitle">30天经营模拟最终结果</div>
+            <div class="period">经营期间：2026年3月26日 - 4月24日</div>
+        </div>
+        
+        <!-- 摘要卡片 -->
+        <div class="summary-cards">
+            <div class="card primary">
+                <div class="card-title">总销售收入</div>
+                <div class="card-value">1,179,000</div>
+                <div class="card-unit">元</div>
+                <div class="card-detail">销售总量：30,000斤</div>
+            </div>
+            
+            <div class="card success">
+                <div class="card-title">净利润</div>
+                <div class="card-value">226,375</div>
+                <div class="card-unit">元</div>
+                <div class="card-detail">每斤净利润：7.55元</div>
+            </div>
+            
+            <div class="card warning">
+                <div class="card-title">投资回报率</div>
+                <div class="card-value">150.9%</div>
+                <div class="card-unit">月回报率</div>
+                <div class="card-detail">投资回收期：约20天</div>
+            </div>
+            
+            <div class="card danger">
+                <div class="card-title">毛利率</div>
+                <div class="card-value">26.2%</div>
+                <div class="card-unit">毛利润/总收入</div>
+                <div class="card-detail">净利率：19.2%</div>
+            </div>
+        </div>
+        
+        <!-- 收入分析 -->
+        <div class="section">
+            <h2 class="section-title">📈 收入分析</h2>
+            
+            <div class="highlight">
+                <strong>核心数据：</strong> 30天内销售3万斤鳜鱼，加权平均售价39.30元/斤，总收入1,179,000元。
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>销售渠道</th>
+                        <th>比例</th>
+                        <th>销售量</th>
+                        <th>平均售价</th>
+                        <th>销售额</th>
+                        <th>毛利率</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>批发</td>
+                        <td>65%</td>
+                        <td class="number">19,500斤</td>
+                        <td class="number">39.00元</td>
+                        <td class="number">760,500元</td>
+                        <td class="number positive">24.5%</td>
+                    </tr>
+                    <tr>
+                        <td>零售</td>
+                        <td>20%</td>
+                        <td class="number">6,000斤</td>
+                        <td class="number">43.50元</td>
+                        <td class="number">261,000元</td>
+                        <td class="number positive">32.8%</td>
+                    </tr>
+                    <tr>
+                        <td>团购</td>
+                        <td>10%</td>
+                        <td class="number">3,000斤</td>
+                        <td class="number">37.00元</td>
+                        <td class="number">111,000元</td>
+                        <td class="number positive">20.0%</td>
+                    </tr>
+                    <tr>
+                        <td>加工</td>
+                        <td>5%</td>
+                        <td class="number">1,500斤</td>
+                        <td class="number">31.00元</td>
+                        <td class="number">46,500元</td>
+                        <td class="number positive">10.0%</td>
+                    </tr>
+                    <tr style="font-weight: 600; background: #f0f7ff;">
+                        <td>合计</td>
+                        <td>100%</td>
+                        <td class="number">30,000斤</td>
+                        <td class="number">39.30元</td>
+                        <td class="number">1,179,000元</td>
+                        <td class="number positive">26.2%</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin: 20px 0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span>批发渠道 (65%)</span>
+                    <span>760,500元</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 65%;"></div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; margin-top: 15px;">
+                    <span>零售渠道 (20%)</span>
+                    <span>261,000元</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 20%; background: linear-gradient(90deg, #34a853, #fbbc05);"></div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; margin-top: 15px;">
+                    <span>团购渠道 (10%)</span>
+                    <span>111,000元</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 10%; background: linear-gradient(90deg, #fbbc05, #ea4335);"></div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; margin-top: 15px;">
+                    <span>加工渠道 (5%)</span>
+                    <span>46,500元</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 5%; background: linear-gradient(90deg, #ea4335, #8e24aa);"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 成本分析 -->
+        <div class="section">
+            <h2 class="section-title">💰 成本分析</h2>
+            
+            <div class="highlight">
+                <strong>成本结构：</strong> 基于25元/斤采购价格（养殖公司成本15元/斤，保证10元利润），总成本870,500元。
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>成本项目</th>
+                        <th>单位成本</th>
+                        <th>总成本</th>
+                        <th>占比</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>采购成本</td>
+                        <td class="number">25.00元/斤</td>
+                        <td class="number">750,000元</td>
+                        <td class="number">86.1%</td>
+                        <td>向养殖公司采购，养殖成本15元/斤</td>
+                    </tr>
+                    <tr>
+                        <td>运输成本</td>
+                        <td class="number">0.40元/斤</td>
+                        <td class="number">12,000元</td>
+                        <td class="number">1.4%</td>
+                        <td>专业运输，50公里×0.8元/斤/公里</td>
+                    </tr>
+                    <tr>
+                        <td>包装材料</td>
+                        <td class="number">0.50元/斤</td>
+                        <td class="number">15,000元</td>
+                        <td class="number">1.7%</td>
+                        <td>泡沫箱、冰袋、氧气袋等</td>
+                    </tr>
+                    <tr>
+                        <td>市场费用</td>
+                        <td class="number">0.50元/斤</td>
+                        <td class="number">15,000元</td>
+                        <td class="number">1.7%</td>
+                        <td>管理费、卫生费、水电费分摊</td>
+                    </tr>
+                    <tr>
+                        <td>损耗成本</td>
+                        <td class="number">1.25元/斤</td>
+                        <td class="number">37,500元</td>
+                        <td class="number">4.3%</td>
+                        <td>5%损耗率，25元×5%</td>
+                    </tr>
+                    <tr>
+                        <td>其他变动</td>
+                        <td class="number">0.50元/斤</td>
+                        <td class="number">15,000元</td>
+                        <td class="number">1.7%</td>
+                        <td>不可预见费用</td>
+                    </tr>
+                    <tr style="font-weight: 600; background: #fff3e0;">
+                        <td>变动成本小计</td>
+                        <td class="number">28.15元/斤</td>
+                        <td class="number">844,500元</td>
+                        <td class="number">97.0%</td>
+                        <td>每斤变动成本</td>
+                    </tr>
+                    <tr>
+                        <td>档口租金</td>
+                        <td class="number">-</td>
+                        <td class="number">3,500元</td>
+                        <td class="number">0.4%</td>
+                        <td>七里堡市场A区12号，月租</td>
+                    </tr>
+                    <tr>
+                        <td>人员工资</td>
+                        <td class="number">-</td>
+                        <td class="number">14,000元</td>
+                        <td class="number">1.6%</td>
+                        <td>4人团队，30天</td>
+                    </tr>
+                    <tr>
+                        <td>设备折旧</td>
+                        <td class="number">-</td>
+                        <td class="number">1,000元</td>
+                        <td class="number">0.1%</td>
+                        <td>6,400元设备按6个月摊销</td>
+                    </tr>
+                    <tr>
+                        <td>市场管理</td>
+                        <td class="number">-</td>
+                        <td class="number">1,500元</td>
+                        <td class="number">0.2%</td>
+                        <td>管理费、卫生费、水电</td>
+                    </tr>
+                    <tr>
+                        <td>行政管理</td>
+                        <td class="number">-</td>
+                        <td class="number">2,000元</td>
+                        <td class="number">0.2%</td>
+                        <td>通讯、交通、办公、差旅</td>
+                    </tr>
+                    <tr>
+                        <td>营销费用</td>
+                        <td class="number">-</td>
+                        <td class="number">2,500元</td>
+                        <td class="number">0.3%</td>
+                        <td>样品、宣传、客户关系</td>
+                    </tr>
+                    <tr>
+                        <td>其他备用</td>
+                        <td class="number">-</td>
+                        <td class="number">1,500元</td>
+                        <td class="number">0.2%</td>
+                        <td>不可预见支出</td>
+                    </tr>
+                    <tr style="font-weight: 600; background: #e8f5e8;">
+                        <td>固定成本小计</td>
+                        <td class="number">-</td>
+                        <td class="number">26,000元</td>
+                        <td class="number">3.0%</td>
+                        <td>30天固定成本</td>
+                    </tr>
+                    <tr style="font-weight: 700; background: #e3f2fd; font-size: 16px;">
+                        <td>总成本</td>
+                        <td class="number">29.02元/斤</td>
+                        <td class="number">870,500元</td>
+                        <td class="number">100.0%</td>
+                        <td>平均每斤总成本</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <h3 style="color: #1a73e8; margin-bottom: 15px;">📊 成本结构饼图（示意）</h3>
+                <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 30px;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>采购成本</span>
+                            <span>750,000元 (86.1%)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 86.1%; background: #1a73e8;"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px; margin-top: 15px;">
+                            <span>其他变动成本</span>
+                            <span>94,500元 (10.9%)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 10.9%; background: #34a853;"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px; margin-top: 15px;">
+                            <span>固定成本</span>
+                            <span>26,000元 (3.0%)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 3.0%; background: #fbbc05;"></div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; min-width: 300px; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <h4 style="color: #5f6368; margin-bottom: 15px;">成本优化空间</h4>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                                <span style="position: absolute; left: 0; color: #34a853;">✓</span>
+                                <strong>采购成本：</strong>可谈判降至24元/斤
+                            </li>
+                            <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                                <span style="position: absolute; left: 0; color: #34a853;">✓</span>
+                                <strong>损耗控制：</strong>目标从5%降至3%
+                            </li>
+                            <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                                <span style="position: absolute; left: 0; color: #34a853;">✓</span>
+                                <strong>固定成本：</strong>可优化至22,000元/月
+                            </li>
+                            <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">
+                                <span style="position: absolute; left: 0; color: #34a853;">✓</span>
+                                <strong>运输效率：</strong>批量运输降低成本
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 利润分析 -->
+        <div class="section">
+            <h2 class="section-title">💹 利润分析</h2>
+            
+            <div class="highlight">
+                <strong>利润结果：</strong> 毛利润308,500元，净利润226,375元，平均每斤净利润7.55元。
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>利润项目</th>
+                        <th>金额</th>
+                        <th>占比</th>
+                        <th>计算说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>总收入</td>
+                        <td class="number">1,179,000元</td>
+                        <td class="number">100.0%</td>
+                        <td>30,000斤 × 39.30元/斤</td>
+                    </tr>
+                    <tr>
+                        <td>减：总成本</td>
+                        <td class="number negative">-870,500元</td>
+                        <td class="number">73.8%</td>
+                        <td>变动成本844,500元 + 固定成本26,000元</td>
+                    </tr>
+                    <tr style="font-weight: 600; background: #e8f5e8;">
+                        <td>毛利润</td>
+                        <td class="number positive">308,500元</td>
+                        <td class="number positive">26.2%</td>
+                        <td>毛利率 = 308,500 ÷ 1,179,000</td>
+                    </tr>
+                    <tr>
+                        <td>减：企业所得税</td>
+                        <td class="number negative">-77,125元</td>
+                        <td class="number">6.5%</td>
+                        <td>308,500元 × 25%</td>
+                    </tr>
+                    <tr>
+                        <td>减：其他税费</td>
+                        <td class="number negative">-5,000元</td>
+                        <td class="number">0.4%</td>
+                        <td>估算值</td>
+                    </tr>
+                    <tr style="font-weight: 700; background: #e3f2fd; font-size: 16px;">
+                        <td>净利润</td>
+                        <td class="number positive">226,375元</td>
+                        <td class="number positive">19.2%</td>
+                        <td>净利率 = 226,375 ÷ 1,179,000</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #e3f2fd, #f3e5f5); border-radius: 10px;">
+                <h3 style="color: #1a73e8; margin-bottom: 15px;">📈 利润率对比</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 14px; color: #5f6368; margin-bottom: 10px;">毛利率</div>
+                        <div style="font-size: 36px; font-weight: 700; color: #1a73e8;">26.2%</div>
+                        <div style="font-size: 14px; color: #5f6368; margin-top: 5px;">行业平均：20-25%</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 14px; color: #5f6368; margin-bottom: 10px;">净利率</div>
+                        <div style="font-size: 36px; font-weight: 700; color: #34a853;">19.2%</div>
+                        <div style="font-size: 14px; color: #5f6368; margin-top: 5px;">行业平均：15-18%</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 14px; color: #5f6368; margin-bottom: 10px;">每斤净利润</div>
+                        <div style="font-size: 36px; font-weight: 700; color: #fbbc05;">7.55元</div>
+                        <div style="font-size: 14px; color: #5f6368; margin-top: 5px;">售价39.30元/斤</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                        <div style="font-size: 14px; color: #5f6368; margin-bottom: 10px;">投资回报率</div>
+                        <div style="font-size: 36px; font-weight: 700; color: #ea4335;">150.9%</div>
+                        <div style="font-size: 14px; color: #5f6368; margin-top: 5px;">月回报率（年化）</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 投资回报分析 -->
+        <div class="section">
+            <h2 class="section-title">📊 投资回报分析</h2>
+            
+            <div class="highlight">
+                <strong>投资概况：</strong> 启动资金150,000元，30天净利润226,375元，投资回报率150.9%，投资回收期约20天。
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>投资指标</th>
+                        <th>数值</th>
+                        <th>评价</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>启动资金</td>
+                        <td class="number">150,000元</td>
+                        <td class="positive">合理</td>
+                        <td>老张个人积蓄</td>
+                    </tr>
+                    <tr>
+                        <td>30天净利润</td>
+                        <td class="number positive">226,375元</td>
+                        <td class="positive">优秀</td>
+                        <td>超额完成目标</td>
+                    </tr>
+                    <tr>
+                        <td>投资回报率</td>
+                        <td class="number positive">150.9%</td>
+                        <td class="positive">卓越</td>
+                        <td>月回报率（年化）</td>
+                    </tr>
+                    <tr>
+                        <td>投资回收期</td>
+                        <td class="number">约20天</td>
+                        <td class="positive">优秀</td>
+                        <td>达到盈亏平衡时间</td>
+                    </tr>
+                    <tr>
+                        <td>每斤净利润</td>
+                        <td class="number">7.55元</td>
+                        <td class="positive">良好</td>
+                        <td>基于25元采购价</td>
+                    </tr>
+                    <tr>
+                        <td>资金周转率</td>
+                        <td class="number">7.86次</td>
+                        <td class="positive">优秀</td>
+                        <td>30天周转次数</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <h3 style="color: #1a73e8; margin-bottom: 15px;">🔄 资金周转分析</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div style="padding: 15px; background: white; border-radius: 8px;">
+                        <div style="font-size: 14px; color: #5f6368; margin-bottom: 5px;">采购资金峰值需求</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #1a73e8;">300,000元</div>
+                        <div style="font-size: 12px; color: #5f6368;">周转需求，非一次性</div>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 8px;">
+                        <div style="font-size: 14px; color: #5f6368; margin-bottom: 5px;">实际启动资金</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #34a853;">150,000元</div>
+                        <div style="font-size: 12px; color: #5f6368;">实际投入</div>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 8px;">
+                        <div style="font-size: 14px; color: #5f6368; margin-bottom: 5px;">资金缺口</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #fbbc05;">150,000元</div>
+                        <div style="font-size: 12px; color: #5f6368;">需要周转解决</div>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 8px;">
+                        <div style="font-size: 14px; color: #5f6368; margin-bottom: 5px;">备用金准备</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #ea4335;">50,000元</div>
+                        <div style="font-size: 12px; color: #5f6368;">风险应对资金</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #34a853;">
+                    <strong>资金周转策略：</strong> 
+                    <ul style="margin: 10px 0 0 20px; padding: 0;">
+                        <li>第1-2周：严格控制支出，加快回款</li>
+                        <li>第3周：现金流改善，可扩大采购</li>
+                        <li>第4周：资金充裕，优化运营</li>
+                        <li>全程：控制库存，加快周转</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 敏感性分析 -->
+        <div class="section">
+            <h2 class="section-title">📉 敏感性分析</h2>
+            
+            <div class="highlight">
+                <strong>风险分析：</strong> 在不同情景下的净利润变化，识别关键风险因素。
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>情景</th>
+                        <th>采购成本</th>
+                        <th>平均售价</th>
+                        <th>损耗率</th>
+                        <th>固定成本</th>
+                        <th>预计净利润</th>
+                        <th>变化幅度</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #e8f5e8;">
+                        <td><strong>最佳情况</strong></td>
+                        <td class="number">24元/斤</td>
+                        <td class="number">40.5元/斤</td>
+                        <td class="number">3%</td>
+                        <td class="number">22,000元</td>
+                        <td class="number positive">320,000元</td>
+                        <td class="number positive">+41.4%</td>
+                    </tr>
+                    <tr style="background: #fff3e0;">
+                        <td><strong>正常情况</strong></td>
+                        <td class="number">25元/斤</td>
+                        <td class="number">39.3元/斤</td>
+                        <td class="number">5%</td>
+                        <td class="number">26,000元</td>
+                        <td class="number positive">226,375元</td>
+                        <td class="number">基准</td>
+                    </tr>
+                    <tr style="background: #ffebee;">
+                        <td><strong>最差情况</strong></td>
+                        <td class="number">26元/斤</td>
+                        <td class="number">38元/斤</td>
+                        <td class="number">7%</td>
+                        <td class="number">30,000元</td>
+                        <td class="number negative">150,000元</td>
+                        <td class="number negative">-33.7%</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div style="margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <h3 style="color: #1a73e8; margin-bottom: 15px;">⚠️ 关键风险因素</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div style="padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #ea4335;">
+                        <div style="font-size: 16px; font-weight: 600; color: #ea4335; margin-bottom: 10px;">红色风险（极高）</div>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>资金断裂</li>
+                            <li>客户开发失败</li>
+                            <li>品质重大问题</li>
+                        </ul>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #fbbc05;">
+                        <div style="font-size: 16px; font-weight: 600; color: #fbbc05; margin-bottom: 10px;">橙色风险（高）</div>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>价格剧烈波动</li>
+                            <li>团队协作问题</li>
+                            <li>运输损耗超标</li>
+                        </ul>
+                    </div>
+                    <div style="padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #34a853;">
+                        <div style="font-size: 16px; font-weight: 600; color: #34a853; margin-bottom: 10px;">黄色风险（中）</div>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>市场竞争加剧</li>
+                            <li>客户投诉处理</li>
+                            <li>天气因素影响</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 结论与建议 -->
+        <div class="section">
+            <h2 class="section-title">🎯 结论与建议</h2>
+            
+            <div class="highlight">
+                <strong>总体评价：</strong> 项目成功！30天内完成3万斤鳜鱼销售，实现净利润226,375元，投资回报率150.9%。
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 30px 0;">
+                <div style="padding: 20px; background: #e8f5e8; border-radius: 10px;">
+                    <h3 style="color: #34a853; margin-bottom: 15px;">✅ 成功因素</h3>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>团队高效协作，4人各司其职</li>
+                        <li>成本控制严格，保证利润空间</li>
+                        <li>市场开拓快速，多渠道并进</li>
+                        <li>灵活调整策略，及时响应市场</li>
+                        <li>品质管控到位，建立客户信任</li>
+                    </ul>
+                </div>
+                
+                <div style="padding: 20px; background: #fff3e0; border-radius: 10px;">
+                    <h3 style="color: #fbbc05; margin-bottom: 15px;">📝 经验教训</h3>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>前期资金规划要更充分</li>
+                        <li>客户开发需要更多时间建立信任</li>
+                        <li>团队协作需要明确分工和及时沟通</li>
+                        <li>要密切关注市场价格变化</li>
+                        <li>库存管理需要更精准的预测</li>
+                    </ul>
+                </div>
+                
+                <div style="padding: 20px; background: #f3e5f5; border-radius: 10px;">
+                    <h3 style="color: #8e24aa; margin-bottom: 15px;">🚀 后续建议</h3>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>巩固现有客户，提高忠诚度</li>
+                        <li>优化成本结构，争取更低采购价</li>
+                        <li>扩大销售规模，目标年销售20万斤</li>
+                        <li>建立品牌，提高市场认知</li>
+                        <li>考虑产业链整合，提高附加值</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 40px 0; padding: 30px; background: linear-gradient(135deg, #1a73e8, #34a853); color: white; border-radius: 15px;">
+                <h2 style="font-size: 28px; margin-bottom: 15px;">🎉 项目成功完成！</h2>
+                <div style="font-size: 18px; margin-bottom: 20px; opacity: 0.9;">
+                    启动资金：150,000元 &nbsp;|&nbsp; 
+                    净利润：226,375元 &nbsp;|&nbsp; 
+                    投资回报率：150.9%
+                </div>
+                <div style="font-size: 16px; opacity: 0.8;">
+                    经营期间：2026年3月26日 - 4月24日 &nbsp;|&nbsp; 
+                    销售总量：30,000斤 &nbsp;|&nbsp; 
+                    平均每斤净利润：7.55元
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        // 简单的动画效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 进度条动画
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 300);
+            });
+            
+            // 数字计数动画
+            function animateValue(element, start, end, duration) {
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    const value = Math.floor(progress * (end - start) + start);
+                    element.textContent = value.toLocaleString();
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    }
+                };
+                window.requestAnimationFrame(step);
+            }
+            
+            // 为卡片数字添加动画
+            const cardValues = document.querySelectorAll('.card-value');
+            cardValues.forEach(card => {
+                const text = card.textContent;
+                const num = parseInt(text.replace(/,/g, ''));
+                if (!isNaN(num)) {
+                    card.textContent = '0';
+                    setTimeout(() => {
+                        animateValue(card, 0, num, 2000);
+                    }, 500);
+                }
+            });
+            
+            // 表格行悬停效果
+            const tableRows = document.querySelectorAll('tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(5px)';
+                    this.style.transition = 'transform 0.2s ease';
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
